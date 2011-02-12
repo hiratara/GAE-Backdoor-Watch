@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
+import urllib2
 
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
-        self.response.out.write('Hello world!')
+        res = urllib2.urlopen("http://ubuntumini:8080/chaberi/")
+        self.response.out.write("".join(res))
 
 
 def main():
