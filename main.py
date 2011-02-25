@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
+import datetime
 import urllib2
 import re
 from model import LastError
@@ -11,6 +12,7 @@ backdoor_url = "http://hiratara.dyndns.org:8080/chaberi/"
 servers = [ur"ブルー", ur"オレンジ", ur"グリーン"]
 pages   = [ur"トップ", ur"2", ur"3", ur"4", ur"5"]
 last_error_key = "lasterror"
+re_report = datetime.timedelta(hours=1)
 
 class MainHandler(webapp.RequestHandler):
     def is_contents_ok(self, content):
@@ -38,7 +40,12 @@ class MainHandler(webapp.RequestHandler):
 
         should_be_reported = True
         if last_error:
-            should_be_reported = False
+            elapsed = datetime.datetime.now() - last_error.datetime
+            if elapsed > re_report:
+                last_error.datetime = datetime.datetime.now()
+                last_error.put()
+            else:
+                should_be_reported = False
         else:
             LastError(key_name=last_error_key).put()
 
