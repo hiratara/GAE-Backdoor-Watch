@@ -34,11 +34,17 @@ class MainHandler(webapp.RequestHandler):
     def get(self):
         last_error = LastError.get_by_key_name(last_error_key)
 
-        res = urllib2.urlopen(backdoor_url)
-        content = "".join(res)
-        if not content is unicode: content = content.decode("UTF-8")
+        is_good_status = True
+        try:
+            res = urllib2.urlopen(backdoor_url)
+            content = "".join(res)
+            if not content is unicode: content = content.decode("UTF-8")
 
-        if self.is_contents_ok(content):
+            is_good_status = self.is_contents_ok(content)
+        except URLError:
+            is_good_status = False
+
+        if is_good_status:
             if last_error:
                 last_error.delete()
                 self.report("Recoverd now.\n")
