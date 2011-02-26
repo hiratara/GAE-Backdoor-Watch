@@ -40,7 +40,7 @@ class MainHandler(webapp.RequestHandler):
             if not content is unicode: content = content.decode("UTF-8")
 
             is_good_status = self.is_contents_ok(content)
-        except URLError:
+        except urllib2.URLError:
             is_good_status = False
 
         if is_good_status:
