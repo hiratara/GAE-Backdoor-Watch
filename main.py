@@ -2,19 +2,29 @@
 # -*- coding: utf-8 -*-
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
+from google.appengine.api import mail
 import datetime
 import urllib2
 import re
 from model import LastError
 
-backdoor_url = "http://hiratara.dyndns.org:8080/chaberi/"
-# backdoor_url = "http://hiratara.dyndns.org:8080"
+#backdoor_url = "http://hiratara.dyndns.org:8080/chaberi/"
+backdoor_url = "http://hiratara.dyndns.org:8080"
 servers = [ur"ブルー", ur"オレンジ", ur"グリーン"]
 pages   = [ur"トップ", ur"2", ur"3", ur"4", ur"5"]
 last_error_key = "lasterror"
 re_report = datetime.timedelta(hours=1)
+mails_to = 'hira.tara@gmail.com'
 
 class MainHandler(webapp.RequestHandler):
+    def report(self, message):
+        mail.send_mail(
+            sender="hira.tara@gmail.com",
+            to=mails_to,
+            subject="backdoor report",
+            body=message,
+        )
+
     def is_contents_ok(self, content):
         for server, page in ((s, p) for p in pages for s in servers):
             if not re.search(ur"%s/%s" % (server, page), content): 
@@ -31,11 +41,10 @@ class MainHandler(webapp.RequestHandler):
         if self.is_contents_ok(content):
             if last_error:
                 last_error.delete()
-                message = 'recover'
-            else:
-                message = 'OK'
+                self.report("Recoverd now.\n")
+            else: pass  # good status. NOP.
 
-            self.response.out.write(message)
+            self.response.out.write("OK\n")
             return
 
         should_be_reported = True
@@ -49,7 +58,10 @@ class MainHandler(webapp.RequestHandler):
         else:
             LastError(key_name=last_error_key).put()
 
-        self.response.out.write('fail' if should_be_reported else 'no report')
+        if should_be_reported:
+            self.report("Bad status. Check the backdoor.")
+
+        self.response.out.write("OK\n")
 
 def main():
     application = webapp.WSGIApplication([('/', MainHandler)],
