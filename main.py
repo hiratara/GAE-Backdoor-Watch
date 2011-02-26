@@ -8,8 +8,7 @@ import urllib2
 import re
 from model import LastError
 
-#backdoor_url = "http://hiratara.dyndns.org:8080/chaberi/"
-backdoor_url = "http://hiratara.dyndns.org:8080"
+backdoor_url = "http://hiratara.dyndns.org:8080/chaberi/"
 servers = [ur"ブルー", ur"オレンジ", ur"グリーン"]
 pages   = [ur"トップ", ur"2", ur"3", ur"4", ur"5"]
 last_error_key = "lasterror"
