@@ -28,6 +28,8 @@ class MainHandler(webapp.RequestHandler):
         for server, page in ((s, p) for p in pages for s in servers):
             if not re.search(ur"%s/%s" % (server, page), content): 
                 return False
+        if re.search(u"読み込めません", content): return False
+
         return True
 
     def get(self):
