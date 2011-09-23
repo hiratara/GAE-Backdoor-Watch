@@ -1,4 +1,4 @@
 cron:
 - description: check backdoor
   url: /
-  schedule: every 4 minutes
+  schedule: every 5 minutes
