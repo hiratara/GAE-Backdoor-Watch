@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
-from google.appengine.api import mail
+from google.appengine.api import mail,urlfetch
 import datetime
-import urllib2
 import re
 from model import LastError
 
@@ -35,23 +34,30 @@ class MainHandler(webapp.RequestHandler):
     def get(self):
         last_error = LastError.get_by_key_name(last_error_key)
 
-        is_good_status = True
+        error_message = ""
+        is_good_status = False
         try:
-            res = urllib2.urlopen(backdoor_url)
-            content = "".join(res)
-            if not content is unicode: content = content.decode("UTF-8")
+            res = urlfetch.fetch(backdoor_url, deadline=1)
+            if res.status_code == 200:
+                content = res.content
+                if not content is unicode: content = content.decode("UTF-8")
 
-            is_good_status = self.is_contents_ok(content)
-        except urllib2.URLError:
-            is_good_status = False
+                is_good_status = self.is_contents_ok(content)
+            else: error_message = "bad status %d" % res.status_code
+        except Exception, e:
+            error_message = str(e)
+
+        self.response.headers['Content-Type'] = 'text/plain'
+        if error_message == "":
+            self.response.out.write("OK\n")
+        else:
+            self.response.out.write(error_message + "\n")
 
         if is_good_status:
             if last_error:
                 last_error.delete()
                 self.report("Recoverd now.\n")
             else: pass  # good status. NOP.
-
-            self.response.out.write("OK\n")
             return
 
         should_be_reported = True
@@ -66,9 +72,9 @@ class MainHandler(webapp.RequestHandler):
             LastError(key_name=last_error_key).put()
 
         if should_be_reported:
-            self.report("Bad status. Check the backdoor.")
-
-        self.response.out.write("OK\n")
+            self.report(
+                "Bad status. Check the backdoor.\n\n%s" % error_message
+                )
 
 def main():
     application = webapp.WSGIApplication([('/', MainHandler)],
