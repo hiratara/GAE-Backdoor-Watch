@@ -8,7 +8,7 @@ import re
 from model import LastError
 
 backdoor_url = "http://hiratara.dyndns.org/chaberi/"
-servers = [ur"ブルー", ur"オレンジ", ur"グリーン"]
+servers = [ur"ブルー", ur"オレンジ", ur"グリーン", ur"ベータ版"]
 pages   = [ur"トップ", ur"2", ur"3", ur"4", ur"5"]
 last_error_key = "lasterror"
 re_report = datetime.timedelta(hours=1)
@@ -37,7 +37,7 @@ class MainHandler(webapp.RequestHandler):
         error_message = ""
         is_good_status = False
         try:
-            res = urlfetch.fetch(backdoor_url, deadline=1)
+            res = urlfetch.fetch(backdoor_url, deadline=4)
             if res.status_code == 200:
                 content = res.content
                 if not content is unicode: content = content.decode("UTF-8")
